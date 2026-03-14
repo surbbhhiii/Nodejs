@@ -1,9 +1,11 @@
-const http = require('http');
+//const http = require('http');
 const fs = require('fs');
+const userRequestHandler = (req, res) => {
 
 
-const server = http.createServer((req, res) => {
-  console.log(req.url, req.method, req.headers);
+
+//const //server = http.createServer((req, res) => {
+  console.log(req.url, req.method);
 
 
 
@@ -30,10 +32,32 @@ const server = http.createServer((req, res) => {
 
 
   } else if (req.url.toLowerCase() === "/submit-details" && req.method == "POST") {
-    fs.writeFileSync('user.txt', 'Surbhi');
-    res.statusCode = 302;
 
-  }
+    const body = [];
+    req.on('data', (chunk) => {
+      console.log(chunk);
+      body.push(chunk);
+    });
+    req.on('end', () => {
+      const fullBody = Buffer.concat(body).toString();
+      console.log(fullBody);
+      const Params =  new URLSearchParams(fullBody);
+      //const bodyObject = {};
+      //for (const [key, value] of Params .entries()) {
+      // bodyObject[key] = value;
+      //}
+
+      const bodyObject = Object.fromEntries(Params);
+      console.log(bodyObject);
+    fs.writeFileSync('user.txt', JSON.stringify(bodyObject)
+    );
+    });
+
+
+
+    res.statusCode = 302;
+    res.setHeader('Location', '/');
+  } 
   res.setHeader('Content-Type', 'text/html');
   res.write('<html>');
   res.write('<head><title>Complete Coding</title></head>');
@@ -41,9 +65,11 @@ const server = http.createServer((req, res) => {
   res.write('</html>');
   res.end();
   
-});
+};
 
-const PORT = 3001;
-server.listen(PORT, () => {
-  console.log(`Server is running on address http://localhost:${PORT}`)
-});
+module.exports = userRequestHandler;
+
+//const PORT = 3001;
+//server.listen(PORT, () => {
+  //console.log(`Server is running on address http://localhost:${PORT}`)
+//});
